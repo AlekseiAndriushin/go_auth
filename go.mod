@@ -1,9 +1,10 @@
-module github.com/AlekseiAndriushin/go_microservices
+module github.com/AlekseiAndriushin/go_auth
 
 go 1.21
 
 require (
 	github.com/fatih/color v1.15.0 // indirect
+	github.com/go-chi/chi v1.5.5 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	golang.org/x/sys v0.6.0 // indirect
