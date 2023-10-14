@@ -22,7 +22,7 @@ func (l *DefaultLogger) Log(level LogLevel, message string) {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	fmt.Printf("[%s] %s\n", level, message)
+	fmt.Printf("[%v] %s\n", level, message)
 }
 
 func SetLogLevel(level LogLevel) {
