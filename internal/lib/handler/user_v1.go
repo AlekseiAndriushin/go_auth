@@ -4,13 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
+	"github.com/AlekseiAndriushin/go_auth/internal/lib/logger"
 	desc "github.com/AlekseiAndriushin/go_auth/pkg/user_v1"
 	"github.com/brianvoe/gofakeit"
-	"github.com/fatih/color"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,14 +17,11 @@ import (
 )
 
 type UserRPCServerV1 struct {
-	desc.UnimplementedUser_V1Server
-	log *log.Logger
+    desc.UnimplementedUserV1Server
 }
 
-func NewUserRPCServerV1(log *log.Logger) *UserRPCServerV1 {
-	return &UserRPCServerV1{
-		log: log,
-	}
+func NewUserRPCServerV1() *UserRPCServerV1 {
+    return &UserRPCServerV1{}
 }
 
 func (s *UserRPCServerV1) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
@@ -36,10 +32,10 @@ func (s *UserRPCServerV1) Create(ctx context.Context, req *desc.CreateRequest) (
 		req.GetPasswordConfirm(),
 		req.GetRole(),
 	)
-	s.log.Println(color.BlueString(resStr))
+  logger.LogInfo(resStr)
 
 	if dline, ok := ctx.Deadline(); ok {
-		s.log.Println(color.BlueString("Deadline: %v", dline))
+		logger.LogInfo(fmt.Sprintf("Deadline: %v", dline))
 	}
 
 	randInt64, err := rand.Int(rand.Reader, new(big.Int).SetInt64(1<<62))
@@ -49,7 +45,7 @@ func (s *UserRPCServerV1) Create(ctx context.Context, req *desc.CreateRequest) (
 	id := randInt64.Int64()
 
 	respStr := fmt.Sprintf("Response Create:\n\tId: %v\n", id)
-	s.log.Println(color.GreenString(respStr))
+	logger.LogInfo(respStr)
 
 	return &desc.CreateResponse{
 		Id: id,
@@ -57,13 +53,13 @@ func (s *UserRPCServerV1) Create(ctx context.Context, req *desc.CreateRequest) (
 }
 
 func (s *UserRPCServerV1) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	s.log.Println(color.BlueString("Received Get:\n\tId: %v", req.GetId()))
+	logger.LogInfo(fmt.Sprintf("Received Get:\n\tId: %v", req.GetId()))
 
 	if dline, ok := ctx.Deadline(); ok {
-		s.log.Println(color.BlueString("Deadline: %v", dline))
+		logger.LogInfo(fmt.Sprintf("Deadline: %v", dline))
 	}
 
-	role := gofakeit.RandString([]string{"ADMIN", "USER"})
+	role := "ADMIN" // Вместо gofakeit используем жестко заданные значения
 	resp := desc.GetResponse{
 		Id:        req.GetId(),
 		Name:      gofakeit.Name(),
@@ -82,7 +78,7 @@ func (s *UserRPCServerV1) Get(ctx context.Context, req *desc.GetRequest) (*desc.
 		resp.UpdatedAt,
 	)
 
-	s.log.Println(color.GreenString(respStr))
+	logger.LogInfo(respStr)
 
 	return &resp, nil
 }
@@ -105,21 +101,13 @@ func (s *UserRPCServerV1) Update(ctx context.Context, req *desc.UpdateRequest) (
 		buf.WriteString(fmt.Sprintf("\tRole: %v\n", req.GetRole()))
 	}
 
-	if dline, ok := ctx.Deadline(); ok {
-		log.Println(color.BlueString("Deadline: %v", dline))
-	}
-
-	s.log.Println(color.BlueString(buf.String()))
+	logger.LogInfo(buf.String())
 
 	return &emptypb.Empty{}, nil
 }
 
 func (s *UserRPCServerV1) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	if dline, ok := ctx.Deadline(); ok {
-		log.Println(color.BlueString("Deadline: %v", dline))
-	}
-
-	log.Println(color.BlueString("Received Delete:\n\tId: %v", req.GetId()))
+	logger.LogInfo(fmt.Sprintf("Received Delete:\n\tId: %v", req.GetId()))
 
 	return &emptypb.Empty{}, nil
 }

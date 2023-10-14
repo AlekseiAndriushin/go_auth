@@ -10,6 +10,7 @@ import (
 
 	"github.com/AlekseiAndriushin/go_auth/internal/config"
 	"github.com/AlekseiAndriushin/go_auth/internal/lib/handler"
+	"github.com/AlekseiAndriushin/go_auth/internal/lib/logger"
 	"github.com/AlekseiAndriushin/go_auth/pkg/user_v1"
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
@@ -27,14 +28,15 @@ func main() {
 	lis, err := net.Listen("tcp", url)
 	if err != nil {
 		errStr := fmt.Sprintf("failed to listen: %v", err)
-		iLog.Fatalf(color.RedString(errStr))
+		logger.LogError(errStr) // Используем новый логгер
+		os.Exit(1)
 	}
 
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	rpcSrvV1 := handler.NewUserRPCServerV1(iLog)
-	user_v1.RegisterUser_V1Server(s, rpcSrvV1)
+	rpcSrvV1 := handler.NewUserRPCServerV1() 
+	user_v1.RegisterUserV1Server(s, rpcSrvV1)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -42,7 +44,8 @@ func main() {
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			errStr := fmt.Sprintf("failed to serve: %v", err)
-			iLog.Fatalf(color.RedString(errStr))
+			logger.LogError(errStr)
+			os.Exit(1)
 		}
 	}()
 
